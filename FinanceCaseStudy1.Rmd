@@ -1,0 +1,108 @@
+---
+title: "FinanceCaseSudies"
+author: "Nitin Khandare"
+date: "August 20, 2018"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(BBmisc)
+library(class)
+library(caret)
+library(tidyverse)
+data = read.csv("E:/Term 3/Finance Analitics/bank-data.csv")
+data$agebin = cut(data$age,seq(18,67,8))
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# lets 
+```{r}
+
+colSums(is.na(data))
+
+data
+
+ggplot(data,aes(x = region,y = income)) + geom_bar(stat = 'identity')
+```
+
+```{r}
+range(data$age)
+
+data$agebin = cut(data$age,seq(17,67,5))
+
+ggplot(data,aes(x = agebin,y = income)) + geom_bar(stat = 'identity')
+```
+
+```{r}
+ggplot(data,aes(x = sex,y = income)) + geom_bar(stat = 'identity')
+
+
+
+
+```
+```{r}
+ggplot(data,aes(x = region,y = income)) + geom_bar(stat = 'identity')
+```
+
+```{r}
+ggplot(data,aes(x = agebin,y = income,fill = pl)) + geom_bar(stat = 'identity')
+```
+
+
+```{r}
+ggplot(data,aes(x = agebin,y = income, fill = married)) + geom_bar(stat = 'identity')
+```
+
+```{r}
+
+
+data1 = data %>% group_by(agebin) %>%
+  summarise(totalInc = sum(income))
+
+ggplot(data1,aes(x = agebin,y = totalInc)) + geom_bar(stat = 'identity')
+```
+```{r}
+data2 = data %>% filter(save_act %in% c("YES","NO")) %>% group_by(save_act,agebin) %>%
+         summarise(totalInc = sum(income))  
+
+table(data$save_act,data$pl)
+```
+
+
+```{r}
+table(data$pl,data$car)
+
+
+```
+
+```{r}
+95+79/330
+87+69/330
+
+95/330
+87/330
+```
+## totla male and female
+```{r}
+data %>% group_by(sex) %>%
+  summarise(n())
+```
+```{r}
+
+
+datass = data %>% group_by(pl,agebin) %>% summarise(sumN = sum(n()))
+
+ggplot(datass,aes(x = agebin, y = sumN, fill = pl)) + geom_bar(stat = 'identity') + geom_text(aes(label = sumN), position = position_dodge(width = .5), vjust = -0.25)
+
+
+                                                                          
+```
+
+```{r}
+
+chisq.test(data$sex, data$pl)
+
+chisq.test(data$region,data$pl)
+```
+
