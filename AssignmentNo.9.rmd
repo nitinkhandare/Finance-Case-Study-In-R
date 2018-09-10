@@ -1,0 +1,64 @@
+---
+title: "AssignmentNo.9"
+author: "Nitin Khandare"
+date: "August 28, 2018"
+output: html_document
+---
+
+
+#### An Investment Banking Advisor uses the opening values to decide on the state of the  stock market. He wishes to conclude what are the most likely opening values on the basis of which he can decide that it's a usual day or an exceptional day.
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(caret)
+library(lubridate)
+cs9 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo9/cs9.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## structure Of Data
+```{r}
+str(cs9)
+```
+
+### Missign Values
+```{r}
+colSums(is.na(cs9))
+```
+### to check the outlier
+```{r}
+boxplot(cs9)
+```
+
+### to check the normalization
+```{r}
+hist(cs9$Close)
+```
+
+
+#### Date in ascending order
+```{r}
+cs9$Date = dmy(cs9$Date)
+
+cs9 = arrange(cs9, Date)
+
+```
+
+### Subset the Data and add the column ROC in Data
+```{r}
+
+p_close = c(NA, cs9$Close)
+p_close = p_close[-length(p_close)]
+
+data_cs9 = cs9 %>% mutate(ROC = (Close - p_close)/p_close)
+
+```
+
+### RETURN On Close
+```{r}
+
+head(data_cs9)
+
+hist(data_cs9$ROC, col = 'red')
+```
+
