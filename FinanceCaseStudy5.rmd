@@ -1,0 +1,103 @@
+---
+title: "FinanceCaseStudy3"
+author: "Nitin Khandare"
+date: "August 20, 2018"
+output: html_document
+---
+
+### A new bank is opening operations. The Business head wants to understand what expected volumes can be for the different clearing methods available from the Electronic Payment Systems - Representative Data (Updated as on February 01, 2017)
+
+```{r setup, include=FALSE}
+cs5 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo.5/cs5.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### structure of Data
+```{r}
+str(cs5)
+```
+
+### summary of Data
+```{r}
+summary(cs5)
+```
+
+
+### remove h value and impute NA values
+```{r}
+
+cs5[cs5 == 'h'] <- NA
+
+```
+
+### find NA Values from data
+```{r}
+colSums(is.na(cs5))
+
+VIM::aggr(cs5)
+```
+
+
+## Omit the NA value from rows
+```{r}
+
+df = na.omit(cs5)
+
+```
+
+
+### Convert All Columns in Numaric type
+```{r}
+
+df$RTGSvolume = as.numeric(df$RTGSvolume)
+
+df$NEFTvolume = as.numeric(df$NEFTvolume)
+
+df$CTS.volume = as.numeric(df$CTS.volume)
+
+df$NACH.volume = as.numeric(df$NACH.volume)
+
+str(df)
+```
+
+### find the outlier from Data
+```{r}
+boxplot(cs5)
+```
+
+### plotting of different Volumn
+```{r}
+corrplot::corrplot(cor(df))
+```
+
+### t test between CTS.volume and RTGSvolume
+```{r}
+
+t.test(df$CTS.volume ~ df$RTGSvolume)
+
+```
+
+## t test between CTS.volume by UPI.volume
+```{r}
+t.test(df$CTS.volume ~df$UPI.volume)
+```
+
+## t test between RTGSvolume by UPI.volume
+```{r}
+t.test(df$RTGSvolume ~df$UPI.volume)
+```
+
+### linear regression model Fitting
+```{r}
+model = lm(Totalvolume~., data = df)
+
+summary(model)
+```
+### 
+```{r}
+pred = predict(model,df)
+
+
+```
+
