@@ -1,0 +1,130 @@
+---
+title: "AssignmentNo.7"
+author: "Nitin Khandare"
+date: "August 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(VIM)
+library(zoo)
+library(tidyverse)
+library(caret)
+cs7 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo7/cs6.csv")
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Problem Statement: The bank manager wants to understand if the average time for decision is the same for the cases where the accounts opened and where the accounts did not open.
+
+
+
+### structure of the Data
+```{r}
+str(cs7)
+```
+
+
+### summary of the Data
+```{r}
+summary(cs7)
+```
+
+### Missing Value treatment
+```{r}
+
+colSums(is.na(cs7))
+
+aggr(cs7)
+
+cs7_data = na.omit(cs7)
+
+dim(cs7_data)
+
+```
+
+
+
+### find the outlier
+```{r}
+boxplot(cs7)
+
+```
+
+### Percentage of outlier
+```{r}
+### percentage of outlier
+PerOutier = function(df){
+  num=sapply(df, is.numeric)
+  NumOut = function(x){
+    q1 = quantile(x, 0.25, na.rm = T)
+    q2 = quantile(x, 0.50, na.rm = T)
+    q3 = quantile(x, 0.75, na.rm = T)
+    iqr = q3-q1
+    outlier = x[x > q3 + 1.5*iqr | x < q1 - 1.5*iqr]
+    percent = (length(outlier) / length(x))*100
+return(percent)
+  }
+  data=sapply(df[,num], NumOut)
+   return(as.data.frame(data))
+}
+
+PerOutier(cs7)
+```
+
+
+
+### outlier treatment of Days.for.decision.after.application column
+```{r}
+
+quantiles1 <- quantile(cs7_data$Days.for.decision.after.application, probs = c(.25, .75))
+
+
+range <- 1.5 * IQR(cs7_data$Days.for.decision.after.application)
+
+
+normal_cs7 <- subset(cs7_data,
+cs7_data$Days.for.decision.after.application > (quantiles1[1] - range) & cs7_data$Days.for.decision.after.application < (quantiles1[2] + range))
+
+```
+
+
+
+### mean of the Days.for.decision.after.application
+```{r}
+mean_ds = mean(normal_cs7$Days.for.decision.after.application)
+
+mean_ds
+```
+
+
+
+### standard deviation of the Days.for.decision.after.application
+```{r}
+stand_dev_ds = sd(normal_cs7$Days.for.decision.after.application)
+
+stand_dev_ds
+```
+
+
+
+### Z score using SD and Mean
+```{r}
+normal_cs7$Z = (normal_cs7$Days.for.decision.after.application - mean_ds)/stand_dev_ds
+
+summary(normal_cs7$Z)
+
+cs7_data1 = normal_cs7[which(normal_cs7$Z < 3), ]
+```
+
+
+
+### t.test on the sample
+```{r}
+t.test(normal_cs7$Days.for.decision.after.application~normal_cs7$Account_open_flag)
+```
+
+```{r}
+
+```
+
