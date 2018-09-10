@@ -1,0 +1,121 @@
+---
+title: "FinanceCaseStudy3"
+author: "Nitin Khandare"
+date: "August 21, 2018"
+output: html_document
+---
+
+
+### The RBI has created a table to understand the return on portfolio for different credit cards across different banks. This data is tabulated on a monthly basis from Jan 2013 to Nov 2016. The RBI is keen to understand if the different card portfolio of Vijaya Bank is showing similar performance.
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(knitr)
+cs3 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo.3/cs3.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## structure of a data
+```{r}
+str(cs3)
+```
+### Summary of a Data
+```{r}
+summary(cs3)
+```
+
+## check the dimention and names of column
+```{r}
+dim(cs3)
+names(cs3)
+```
+
+## check the NA values or missing values
+```{r}
+colSums(is.na(cs3))
+```
+
+### find the percentage outliers
+```{r}
+
+PerOutlier = function(x) {
+   num = sapply(x, is.numeric)
+  colOut=function(i) {
+  q1 = quantile(i, 0.25, na.rm = T)
+q2 = quantile(i, 0.5, na.rm = T)
+q3 = quantile(i, 0.75, na.rm = T)
+iqr = q3 - q1
+outlier = i[i > q3 + 1.5*iqr | i < q1 - 1.5*iqr]
+perout = (length(outlier) / length(i))*100
+return(perout)
+    }
+   outlierPer=sapply(x[,num],colOut)
+   return(kable(as.data.frame(outlierPer)))
+}
+ 
+PerOutlier(cs3)
+
+```
+
+
+## t-test on Vijay bank visa and master card
+```{r}
+t.test(cs3$Vijaya.Bank.Visa.Gold.Credit.Card,
+       cs3$Vijaya.Bank.MasterCard.Global.Card)
+
+
+## here Vijay bank Card showing different Performance because p value is less than 0.05 
+## so here we reject the Null hypothesis.
+```
+
+
+
+
+### Anova model on Vijay bank Card Data
+```{r}
+
+modelaov = aov(cs3$Vijaya.Bank.Visa.Gold.Credit.Card ~
+                 cs3$Vijaya.Bank.MasterCard.Classic.Credit.Card +
+                 cs3$Vijaya.Bank.MasterCard.Global.Card + 
+                 cs3$Vijaya.Bank.VISA.Classic.International.Card, data = cs3)
+
+modelaov
+```
+
+### anova on three columns only
+```{r}
+modelaov1 = aov(cs3$Vijaya.Bank.Visa.Gold.Credit.Card ~
+                 cs3$Vijaya.Bank.MasterCard.Classic.Credit.Card +
+                 cs3$Vijaya.Bank.MasterCard.Global.Card, data = cs3)
+
+modelaov1
+```
+
+
+### Sample of only Vijay bank Data
+```{r}
+
+cs4vj = cs3[,c(1,2,15,17,19,21)]
+```
+
+### Structure of vijay bank sample data
+```{r}
+str(cs4vj)
+```
+
+### t-test on Syndicate cards
+```{r}
+t.test(cs3$Syndicate.Global.Classic.Credit.Card,
+       cs3$Syndicate.Global.Gold.Credit.Card)
+
+## here Syndicate bank card showing Same Performance because p value is greater than 0.05 
+## so here we accept the Null hypothesis
+```
+
+## t-test on HDFS cards
+```{r}
+t.test(cs3$HDFC.Cooperate.credit.card,cs3$HDFC.Silver.credit.card)
+```
+
+
