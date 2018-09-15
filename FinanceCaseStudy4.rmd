@@ -1,0 +1,124 @@
+---
+title: "FinanceCaseStudy5"
+author: "Nitin Khandare"
+date: "August 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+cs4 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo4/cs4.csv")
+library(class)
+library(caret)
+library(BBmisc)
+library(randomForest)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### structure of the Data
+```{r}
+str(cs4)
+```
+### Summary of the Data
+```{r}
+summary(cs4)
+```
+
+
+## check the missing values
+
+```{r}
+
+colSums(is.na(cs4))
+```
+
+
+## check the outlier
+```{r}
+
+boxplot(cs4)
+```
+
+
+## Percentage of outlier
+```{r}
+
+PerOutlier = function(x) {
+   num = sapply(x, is.numeric)
+  colOut=function(i) {
+  q1 = quantile(i, 0.25, na.rm = T)
+q2 = quantile(i, 0.5, na.rm = T)
+q3 = quantile(i, 0.75, na.rm = T)
+iqr = q3 - q1
+outlier = i[i > q3 + 1.5*iqr | i < q1 - 1.5*iqr]
+perout = (length(outlier) / length(i))*100
+return(perout)
+    }
+   outlierPer=sapply(x[,num],colOut)
+   return(as.data.frame(outlierPer))
+}
+ 
+PerOutlier(cs4)
+```
+
+
+### Sampling of the data
+```{r}
+sample.cs4 = createDataPartition(cs4$Type.of.cust,p=0.7,list =F)
+train = cs4[sample.cs4,]
+test = cs4[-sample.cs4,]
+```
+
+## train the model using Random Forest
+```{r}
+modelrf = randomForest(Type.of.cust~., data = train)
+
+predictcs5 = predict(modelrf,test)
+
+confusionMatrix(predictcs5,test$Type.of.cust)
+```
+
+## kmean clustering for grouping 
+```{r}
+cs4 = read.csv("E:/Term 3/Finance Analitics/AssignmentNo4/cs4.csv")
+
+data_norm = normalize(cs4 %>% select(-Type.of.cust),method = 'range',range = c(0,1))
+
+modelkm = kmeans(data_norm, centers = 5)
+
+
+modelkm$cluster
+
+modelkm$withinss
+
+modelkm$betweenss
+
+modelkm$tot.withinss
+
+data_norm$cluster = modelkm$cluster
+```
+
+#### five cluster plotting
+```{r}
+barplot(table(modelkm$cluster))
+```
+
+### cluster plotting using Scatter plot
+```{r}
+dim(as.matrix(dist(data_norm %>% select(-cluster))))
+data_norm_2d = cmdscale(dist(data_norm %>% select(-cluster)))
+
+data_norm_2d = as.data.frame(data_norm_2d)
+
+data_norm_2d$cluster = as.factor(data_norm$cluster)
+library(ggplot2)
+
+ggplot(data_norm_2d,aes(x = V1, y=V2,color = cluster)) + geom_jitter()
+
+```
+
+```{r}
+
+plot(data_norm_2d)
+```
+
