@@ -1,0 +1,137 @@
+---
+title: "FinanceCaseStudy2"
+author: "Nitin Khandare"
+date: "August 20, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+lp = read.csv("E:/Term 3/Finance Analitics/FinanceCaseStudy2/Loan_portfolio.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Structure of loan Portfolio data
+```{r}
+str(lp)
+```
+
+## Summary of loan Portfolio data
+```{r}
+summary(lp)
+```
+
+### Check the Missing Values
+```{r}
+
+
+colSums(is.na(lp))
+```
+
+## Check the percentage of outlier from loan Portfolio data
+```{r}
+
+PerOutlier = function(x) {
+   num = sapply(x, is.numeric)
+  colOut=function(i) {
+  q1 = quantile(i, 0.25, na.rm = T)
+q2 = quantile(i, 0.5, na.rm = T)
+q3 = quantile(i, 0.75, na.rm = T)
+iqr = q3 - q1
+outlier = i[i > q3 + 1.5*iqr | i < q1 - 1.5*iqr]
+perout = (length(outlier) / length(i))*100
+return(perout)
+    }
+   outlierPer=sapply(x[,num],colOut)
+   return(as.data.frame(outlierPer))
+}
+ 
+PerOutlier(lp)
+
+```
+
+
+## Two classes frequency in Tenure month column
+```{r}
+table(lp$Tenure_months)
+
+```
+
+## histogram of loan amount column
+```{r}
+hist(lp$loan_amnt)
+```
+
+## histogram of funded amount column
+```{r}
+hist(lp$funded_amnt)
+```
+
+## mean of loan amount
+```{r}
+
+mean(lp$loan_amnt)
+```
+
+### mean of funded amount
+```{r}
+mean(lp$funded_amnt)
+```
+
+### correlation on loan Portfolio data
+```{r}
+corrplot::corrplot(cor(lp))   
+```
+
+## density graph for loan amount
+```{r}
+lm = density(lp$loan_amnt)
+plot(lm)
+```
+
+## density graph for funded amount
+```{r}
+a = density(lp$funded_amnt)
+plot(a)
+```
+
+### Tenure_months is equal to 36. what is the loan amount mean and standard deviation 
+```{r}
+l_am_data1 = lp %>% filter(Tenure_months == 36) %>% 
+                         group_by(Tenure_months) %>% 
+                         summarise(mean_l_amt = mean(loan_amnt),sd_l_amt = sd(loan_amnt))
+
+l_am_data1
+```
+
+
+#### Tenure_months is equal to 60. what is the loan amount mean and standard deviation
+```{r}
+l_am_data2 = lp %>% filter(Tenure_months == 60) %>% 
+                         group_by(Tenure_months) %>% 
+                         summarise(mean_l_amt = mean(loan_amnt),sd_l_amt = sd(loan_amnt))
+
+l_am_data2
+```
+
+
+### Tenure_months is equal to 36. what is the funded amount mean and standard deviation
+```{r}
+
+f_am_data1 = lp %>% filter(Tenure_months == 36) %>% 
+                         group_by(Tenure_months) %>% 
+                         summarise(mean_f_amt = mean(funded_amnt),sd_f_amt = sd(funded_amnt))
+
+f_am_data1
+```
+
+### Tenure_months is equal to 60. what is the funded amount mean and standard deviation
+```{r}
+
+f_am_data2 = lp %>% filter(Tenure_months == 60) %>% 
+                         group_by(Tenure_months) %>% 
+                         summarise(mean_f_amt = mean(funded_amnt),sd_f_amt = sd(funded_amnt))
+
+f_am_data2
+```
+
