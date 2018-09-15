@@ -1,0 +1,213 @@
+---
+title: "IIFL_CaseStudy"
+author: "Nitin Khandare"
+date: "August 23, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(caret)
+library(corrplot)
+library(class)
+library(VIM)
+library(zoo)
+library(BBmisc)
+
+
+## Read the data
+behavior = read.csv("E:/Term 3/Finance Analitics/India infoline/behavior.csv")
+
+demog = read.csv("E:/Term 3/Finance Analitics/India infoline/demog.csv")
+df2 = demog
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## structure of a behaviour Data
+```{r}
+str(behavior)
+```
+
+### structure of a behaviour Data
+```{r}
+str(demog)
+```
+
+
+## Summary OF a behaviour data
+```{r}
+summary(behavior)
+```
+
+### summary of a Demog data
+
+```{r}
+summary(demog)
+```
+
+### Find the missing Values from Data
+```{r}
+colSums(is.na(behavior))
+
+colSums(is.na(demog))
+
+aggr(behavior)
+
+
+
+```
+
+### Missing Value treatment
+```{r}
+
+behavior$Credit_Limit = as.numeric(behavior$Credit_Limit)
+
+df1 = na.locf(behavior)
+
+aggr(df1)
+
+colSums(is.na(df1))
+
+```
+## Romoved All NA Values
+```{r}
+
+### Read the New Imputted Data
+New_behav = read.csv("E:/Term 3/Finance Analitics/India infoline/df1_new.csv")
+
+
+colSums(is.na(New_behav))
+
+
+#### it Shows Missing Value Column
+aggr(New_behav)
+```
+
+## finding the outlier from Data
+```{r}
+boxplot(New_behav)
+```
+
+
+## percentage of outlier in Data
+```{r}
+
+
+PerOutier = function(df){
+  num=sapply(df, is.numeric)
+  NumOut = function(x){
+    q1 = quantile(x, 0.25, na.rm = T)
+    q2 = quantile(x, 0.50, na.rm = T)
+    q3 = quantile(x, 0.75, na.rm = T)
+    iqr = q3-q1
+    outlier = x[x > q3 + 1.5*iqr | x < q1 - 1.5*iqr]
+    percent = (length(outlier) / length(x))*100
+return(percent)
+  }
+  data=sapply(df[,num], NumOut)
+   return(as.data.frame(data))
+}
+
+PerOutier(New_behav)
+```
+
+
+### Data Understanding using histogram
+```{r}
+hist(New_behav$EBIT, col = "red")
+
+hist(New_behav$Footing)
+
+hist(New_behav$Revenue)
+
+hist(New_behav$Interest_income)
+
+hist(New_behav$Cost_of_Fund)
+
+hist(New_behav$Other_income)
+
+hist(New_behav$Operational_Expenses)
+
+hist(New_behav$Credit_Limit)
+```
+
+### Now Here we Merge the DataSets Behavior and Demog
+```{r}
+
+New_data = merge(New_behav,demog)
+
+colSums(is.na(New_data))
+
+```
+
+
+### Data Normalization
+```{r}
+
+##dummy_obj = dummyVars(~., data = New_data)
+
+##New_DummyVar_Data = data.frame(predict(dummy_obj, newdata = New_data))
+
+Normalz_data = normalize(New_data,method = 'range',range = c(0,1))
+```
+
+
+## Data Plotting
+```{r}
+
+#### Product 1 Earnign before interest and Tax
+ggplot(Normalz_data,aes(x = Product1,y = EBIT)) + geom_bar(stat = "identity")
+
+### scatter plot between Revenue and EBIT
+ggplot(Normalz_data,aes(x = Revenue,y = EBIT)) + geom_point()
+
+##### product 1 Revenue
+ggplot(Normalz_data,aes(x = Product1,y = Revenue)) + geom_bar(stat = "identity")
+
+
+ggplot(Normalz_data,aes(x = Interest_income ,y = EBIT)) + geom_jitter()
+
+
+ggplot(Normalz_data,aes(x = Footing ,y = EBIT)) + geom_jitter()
+```
+
+
+
+### hirarchical model Building to take the group of data
+```{r}
+Normalz_data = normalize(New_data, method = 'range', range = c(0,1))
+
+# model_hr = kmeans(Normalz_data,centers = 3)
+
+######################################################################
+
+hclust_model = hclust(dist(Normalz_data))
+
+
+### Dendogram of Hierarchical Clusters
+
+plot(hclust_model)
+
+#######################################################################
+
+Normalz_data$cluster = cutree(hclust_model,k = 3)
+
+data_norm_2d = cmdscale(dist(Normalz_data))
+
+data_norm_2d = as.data.frame(data_norm_2d)
+
+data_norm_2d$cluster = as.factor(data_norm$cluster)
+
+ggplot(data_norm_2d,aes(x = V1,y = V2,color = cluster)) + geom_jitter()
+
+
+```
+
+```{r}
+cor_player = cor(t(data_norm %>% head(10) %>% select(-cluster)))
+dim(cor_player)
+corrplot::corrplot(cor_player, order = 'hclust', addrect = 2)
+
+```
+
