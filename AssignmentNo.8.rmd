@@ -1,0 +1,98 @@
+---
+title: "AssignmentNo.8"
+author: "Nitin Khandare"
+date: "August 27, 2018"
+output: html_document
+---
+
+### The dataset contains last 28 transactions made in a savings account along with total amount
+? The transaction is both positive and negative(withdrawal and deposits)
+? Find out how to predict the closing amount using the last 28 transactions in a saving account
+
+```{r setup, include=FALSE}
+
+cs8 = read.csv("E:/Term 3/Finance Analitics/cs8.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Structure of the Data
+```{r}
+str(cs8)
+```
+
+### summary of the data
+```{r}
+summary(cs8)
+```
+
+
+### check the NA values from data
+```{r}
+colSums(is.na(cs8))
+```
+
+### outlier from the data
+```{r}
+boxplot(cs8)
+
+```
+ 
+#### check the normalize data or not
+```{r}
+
+hist(cs8$Transaction1)
+hist(cs8$Transaction1)
+
+
+hist(cs8$Closing.amount)
+
+#### all the columns are in skewness
+```
+
+### we can normalize the data For better prediction
+```{r}
+library(BBmisc)
+
+data_normcs8 = normalize(cs8, method = "range",range = c(0,1))
+
+hist(data_normcs8$Closing.amount)
+```
+
+### Data Sampling
+```{r}
+
+train = data_normcs8[sample(seq(1,nrow(data_normcs8)),(0.7*nrow(data_normcs8))),]
+
+test = data_normcs8[sample(seq(1,nrow(data_normcs8)),(0.3*nrow(data_normcs8))),]
+```
+
+### model Fitting
+```{r}
+model = lm(Closing.amount~., data = train)
+
+
+summary(model)
+```
+
+#### prediction 
+```{r}
+pred = predict(model,test)
+
+```
+
+### actuals_predicteds dataframe.
+```{r}
+actuals_preds <- data.frame(cbind(actuals=cs8test$Closing.amount, predicteds=pred))  # make actuals_predicteds dataframe.
+correlation_accuracy <- cor(actuals_preds)  
+head(actuals_preds)
+```
+
+
+### Root Mean Square Error
+```{r}
+rmse <- sqrt(sum((exp(pred) - test$Closing.amount)^2)/length(test$Closing.amount))
+c(RMSE = rmse, R2=summary(model)$r.squared)
+```
+
+
